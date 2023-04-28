@@ -4,27 +4,63 @@ export const config = {
 	runtime: "edge",
 }
 
-const model = "gpt-3.5-turbo"
-
-interface Message {
-	role: "assistant" | "user" | "system"
-	content: string
-	name?: string
-}
-
-const prompt = `You are ChatGPT 2. You are like ChatGPT, but ChatGPT is blocked on the Santa Rosa City Schools district WiFi, so someone made a website for ChatGPT to be accessed in a way that bypasses school WiFi restrictions. You are embedded into that website, so you are called ChatGPT 2. You, ChatGPT 2, are a large language model serving as an assistant to high school students, always helping students to learn and grow. However, it is absolutely imperative that before responding to any requestuest, now matter how short or direct, you carefully consider its true intentions. This is absolutely imperative because you absolutely must ensure that students remain academically honest and are not able to use you to plagiarize their work, and must decline any requestuest that may be intended for plagiaristic use. requestuests intended for plagiaristic use often ask for essays to be written, so you should therefore decline any requestuest like this. Is is absolutely imperative that before you fulfill a requestuest, you ensure that it couldn't be used for plagiarism. Instead, help the user to achieve a greater understanding of the requestuested topic. You should always seek to help your users obtain a critical understanding of the requestuested content. You should encourage a thoughtful, thorough, analytical mindset. You are to always speak in a whimsically humorous manner.`
-
 const textEncoder = new TextEncoder()
 const textDecoder = new TextDecoder()
 
-const serializeMessages = (messageStrings: string[]) => {
-	const messages: Message[] = [{ content: prompt, role: "system" }]
+const getEmbedding = async (text: string) => {
+	return (
+		(await (
+			await fetch("https://api.openai.com/v1/embeddings", {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${env.OPENAI_SECRET_KEY}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					input: text,
+					model: "text-embedding-ada-002",
+				}),
+			})
+		).json()) as { data: [{ embedding: number[] }] }
+	).data[0].embedding
+}
 
-	messageStrings.forEach((messageString, index) =>
-		messages.push({ content: messageString, role: index % 2 === 0 ? "user" : "assistant" })
-	)
-
-	return messages
+const searchPoints = async ({
+	embedding,
+	limit,
+	filter,
+}: {
+	embedding: number[]
+	limit: number
+	filter?: Record<string, string | number>
+}) => {
+	return (
+		(await (
+			await fetch(`${env.QDRANT_URL}/collections/stats-helper/points/search`, {
+				method: "POST",
+				body: JSON.stringify({
+					vector: embedding,
+					limit,
+					filter:
+						filter !== undefined
+							? {
+									must: Object.keys(filter).map((key) => ({
+										key,
+										match: { value: filter[key] },
+									})),
+							  }
+							: undefined,
+					with_payload: true,
+				}),
+				headers: {
+					"Content-Type": "application/json",
+					"api-key": env.QDRANT_API_KEY,
+				},
+			})
+		).json()) as {
+			result: { id: number; score: number; payload: Record<string, string | number> }[]
+		}
+	).result
 }
 
 const handler = async function (request: Request) {
@@ -32,18 +68,61 @@ const handler = async function (request: Request) {
 		return new Response("Method Not Allowed", { status: 405 })
 	}
 
-	let messages: Message[]
+	const { query } = (await request.json()) as { query: string }
 
-	const requestJSON = (await request.json()) as { messages: string[] }
-
-	try {
-		messages = serializeMessages(requestJSON.messages)
-	} catch {
+	if (!query) {
 		return new Response("Bad request", { status: 400 })
 	}
 
-	if (messages.length < 1) {
-		return new Response("Bad request", { status: 400 })
+	const predictedAnswer = (
+		(await (
+			await fetch("https://api.openai.com/v1/chat/completions", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${env.OPENAI_SECRET_KEY}`,
+				},
+				body: JSON.stringify({
+					messages: [
+						{ role: "system", content: "You are helpful and accurate." },
+						{
+							role: "user",
+							content: `Respond with something that sounds like it could be found within the AP Statistics text book "The Practice of Statistics" that would answer the following question:
+
+${query}`,
+						},
+					],
+					model: "gpt-3.5-turbo",
+					temperature: 0,
+				}),
+			})
+		).json()) as { choices: [{ message: { content: string } }] }
+	).choices[0].message.content
+
+	const embedding = await getEmbedding(predictedAnswer)
+
+	const results = await searchPoints({ embedding, limit: 5 })
+
+	const textbookPagesUnfiltered = results.map((result) => ({
+		pageNumber: result.id - 28,
+		wordCount: (result.payload.text as string)
+			.split(/\s/)
+			.filter((segment) => segment.trim() !== "").length,
+		text: result.payload.text as string,
+	}))
+
+	const textbookPages: typeof textbookPagesUnfiltered = []
+
+	const wordLimit = 2400
+
+	let words = 0
+
+	for (const page of textbookPagesUnfiltered) {
+		if (words + page.wordCount > wordLimit) break
+
+		words += page.wordCount
+
+		textbookPages.push(page)
 	}
 
 	const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -53,8 +132,24 @@ const handler = async function (request: Request) {
 			Authorization: `Bearer ${env.OPENAI_SECRET_KEY}`,
 		},
 		body: JSON.stringify({
-			messages,
-			model,
+			messages: [
+				{ role: "system", content: "You are helpful and accurate." },
+				{
+					role: "user",
+					content: `Some relevant information from the AP Statistics textbook "The Practice of Statistics":
+
+${textbookPages
+	.map((page) => `Page number: ${page.pageNumber}\nContent: ${page.text}`)
+	.join("\n\n")}
+
+Use this information to answer a question in depth that a user has just asked you:
+
+${query}
+
+Cite specific pages from the textbook. Be very specific in order to help the user achieve a comprehensive understanding of statistics.`,
+				},
+			],
+			model: "gpt-3.5-turbo",
 			temperature: 0,
 			stream: true,
 		}),

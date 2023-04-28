@@ -23,11 +23,11 @@ const NoSSR: FC<{ children: ReactElement }> = ({ children }) => {
 }
 
 const getBotMessage = async ({
-	messages,
+	input,
 	onContent,
 	onFinish,
 }: {
-	messages: string[]
+	input: string
 	onContent: (content: string) => void
 	onFinish: () => void
 }) => {
@@ -35,7 +35,7 @@ const getBotMessage = async ({
 		method: "POST",
 		body: textEncoder.encode(
 			JSON.stringify({
-				messages,
+				query: input,
 			})
 		),
 	})
@@ -59,6 +59,8 @@ const getBotMessage = async ({
 	}
 }
 
+// a pretty realistic demo question: Why do I use the word confident instead of probability when interpreting a confidence interval?
+
 const Home: NextPage = () => {
 	const [messageInput, setMessageInput] = useState("")
 
@@ -80,7 +82,7 @@ const Home: NextPage = () => {
 		scrollerRef.current?.scroll({ top: scrollerRef.current.scrollHeight })
 
 		void getBotMessage({
-			messages,
+			input: messageInput,
 			onContent: (content) => {
 				setMessages((messages) => [
 					...messages.slice(0, generatingIndex),
