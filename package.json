@@ -2,6 +2,7 @@
 	"name": "stats-helper",
 	"version": "0.1.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"build": "next build",
 		"dev": "next dev",
@@ -9,6 +10,8 @@
 		"start": "next start"
 	},
 	"dependencies": {
+		"@google-cloud/storage": "^6.9.5",
+		"@google-cloud/vision": "^3.1.3",
 		"clsx": "^1.2.1",
 		"next": "^13.2.4",
 		"react": "18.2.0",

@@ -21,6 +21,14 @@
 			"~/*": ["./src/*"]
 		}
 	},
-	"include": [".eslintrc.cjs", "next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs"],
+	"include": [
+		".eslintrc.cjs",
+		"next-env.d.ts",
+		"**/*.ts",
+		"**/*.tsx",
+		"**/*.cjs",
+		"**/*.mjs",
+		"scripts/loadTextbook.ts"
+	],
 	"exclude": ["node_modules"]
 }
