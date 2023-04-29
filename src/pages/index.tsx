@@ -71,6 +71,8 @@ const Home: NextPage = () => {
 	const scrollerRef = useRef<HTMLDivElement>(null)
 
 	const onSend = () => {
+		if (generating) return
+
 		const generatingIndex = messages.length + 1
 
 		setMessages((messages) => [...messages, messageInput])
