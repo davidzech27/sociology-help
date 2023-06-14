@@ -92,7 +92,7 @@ const handler = async function (request: Request) {
 ${query}`,
 						},
 					],
-					model: "gpt-3.5-turbo",
+					model: "gpt-3.5-turbo-0613",
 					temperature: 0,
 				}),
 			})
@@ -149,7 +149,7 @@ ${query}
 Cite specific pages from the textbook. Be very specific in order to help the user achieve a comprehensive understanding of statistics.`,
 				},
 			],
-			model: "gpt-3.5-turbo",
+			model: "gpt-3.5-turbo-16k-0613",
 			temperature: 0,
 			stream: true,
 		}),
