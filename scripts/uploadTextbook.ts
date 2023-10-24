@@ -8,9 +8,10 @@ if (typeof pathToTextbook !== "string") {
 	process.exit(1)
 }
 
-const bucket = new Storage().bucket("stats-helper")
 
 const main = async () => {
+	const bucket = new Storage().bucket("sociology-help")
+
 	await bucket.upload(pathToTextbook, {
 		destination: "stats.pdf",
 		preconditionOpts: { ifGenerationMatch: 0 },

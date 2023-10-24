@@ -1,1 +1,1 @@
-# AP Stats Helper
+# Sociology helper

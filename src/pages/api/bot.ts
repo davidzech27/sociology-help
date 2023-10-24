@@ -36,7 +36,7 @@ const searchPoints = async ({
 }) => {
 	return (
 		(await (
-			await fetch(`${env.QDRANT_URL}/collections/stats-helper/points/search`, {
+			await fetch(`${env.QDRANT_URL}/collections/sociology-help/points/search`, {
 				method: "POST",
 				body: JSON.stringify({
 					vector: embedding,
@@ -87,7 +87,7 @@ const handler = async function (request: Request) {
 						{ role: "system", content: "You are helpful and accurate." },
 						{
 							role: "user",
-							content: `Respond with something that sounds like it could be found within the AP Statistics text book "The Practice of Statistics" that would answer the following question:
+							content: `Respond with something that sounds like it could be found within the statistics / sociology textbook "Social Statistics for a Diverse Society" that would answer the following question:
 
 ${query}`,
 						},
@@ -104,7 +104,7 @@ ${query}`,
 	const results = await searchPoints({ embedding, limit: 5 })
 
 	const textbookPagesUnfiltered = results.map((result) => ({
-		pageNumber: result.id - 28,
+		pageNumber: result.id - 0,
 		wordCount: (result.payload.text as string)
 			.split(/\s/)
 			.filter((segment) => segment.trim() !== "").length,
@@ -136,7 +136,7 @@ ${query}`,
 				{ role: "system", content: "You are helpful and accurate." },
 				{
 					role: "user",
-					content: `Some relevant information from the AP Statistics textbook "The Practice of Statistics":
+					content: `Some relevant information from the statistics / sociology textbook "Social Statistics for a Diverse Society":
 
 ${textbookPages
 	.map((page) => `Page number: ${page.pageNumber}\nContent: ${page.text}`)
@@ -146,7 +146,7 @@ Use this information to answer a question in depth that a user has just asked yo
 
 ${query}
 
-Cite specific pages from the textbook. Be very specific in order to help the user achieve a comprehensive understanding of statistics.`,
+Cite specific pages from the textbook. Be very specific in order to help the user achieve a comprehensive understanding of statistics / sociology.`,
 				},
 			],
 			model: "gpt-3.5-turbo-16k-0613",

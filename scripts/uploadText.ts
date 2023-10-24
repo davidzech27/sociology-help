@@ -1,7 +1,7 @@
 import { Storage } from "@google-cloud/storage"
 import { type protos } from "@google-cloud/vision"
 
-const bucket = new Storage().bucket("stats-helper")
+const bucket = new Storage().bucket("sociology-help")
 
 const { QDRANT_URL, QDRANT_API_KEY, OPENAI_SECRET_KEY } = process.env
 
@@ -24,10 +24,10 @@ if (typeof OPENAI_SECRET_KEY !== "string") {
 }
 
 const createCollection = async () => {
-	await fetch(`${QDRANT_URL}/collections/stats-helper`, {
+	await fetch(`${QDRANT_URL}/collections/sociology-help`, {
 		method: "PUT",
 		body: JSON.stringify({
-			name: "stats-helper",
+			name: "sociology-help",
 			vectors: {
 				size: 1536,
 				distance: "Dot",
@@ -44,7 +44,7 @@ const insertPoints = async (
 	points: { id: number; payload: Record<string, string | number>; vector: number[] }[]
 ) => {
 	await (
-		await fetch(`${QDRANT_URL}/collections/stats-helper/points`, {
+		await fetch(`${QDRANT_URL}/collections/sociology-help/points`, {
 			method: "PUT",
 			body: JSON.stringify({ points }),
 			headers: {
@@ -58,7 +58,7 @@ const insertPoints = async (
 const countPoints = async () => {
 	return (
 		(await (
-			await fetch(`${QDRANT_URL}/collections/stats-helper/points/count`, {
+			await fetch(`${QDRANT_URL}/collections/sociology-help/points/count`, {
 				method: "POST",
 				body: JSON.stringify({
 					exact: true,

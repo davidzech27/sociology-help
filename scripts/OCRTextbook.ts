@@ -2,7 +2,7 @@ import { v1 as vision } from "@google-cloud/vision"
 
 const client = new vision.ImageAnnotatorClient()
 
-const bucketName = "stats-helper"
+const bucketName = "sociology-help"
 
 const fileName = "stats.pdf"
 

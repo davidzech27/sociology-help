@@ -59,8 +59,6 @@ const getBotMessage = async ({
 	}
 }
 
-// a pretty realistic demo question: Why do I use the word confident instead of probability when interpreting a confidence interval?
-
 const Home: NextPage = () => {
 	const [messageInput, setMessageInput] = useState("")
 
@@ -118,8 +116,8 @@ const Home: NextPage = () => {
 	return (
 		<>
 			<Head>
-				<title>AP Stats Helper</title>
-				<meta name="description" content="Using AI to help you with AP Stats" />
+				<title>Sociology Helper</title>
+				<meta name="description" content="Using AI to help you with sociology" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
@@ -150,14 +148,8 @@ const Home: NextPage = () => {
 							)}
 						>
 							<div
-								style={{
-									background: "linear-gradient(to right, #4d52ff, #24bdff)",
-									WebkitBackgroundClip: "text",
-									backgroundClip: "text",
-									color: "transparent",
-								}}
 								className={clsx(
-									"relative cursor-default select-none text-center text-[8px] font-semibold md:text-xl",
+									"relative cursor-default select-none text-center text-[8px] font-semibold text-white md:text-xl",
 									typeof navigator !== "undefined" &&
 										navigator.userAgent.includes("Safari") &&
 										!navigator.userAgent.includes("Chrome") &&
@@ -169,7 +161,7 @@ const Home: NextPage = () => {
 										: "top-[0.25vh]"
 								)}
 							>
-								Get quick and detailed answers from your AP Stats textbook
+								Get quick and detailed answers from your sociology textbook
 							</div>
 						</div>
 					</NoSSR>
@@ -220,21 +212,14 @@ const Home: NextPage = () => {
 
 								<button
 									className={clsx(
-										"group mx-5 my-4 flex h-[9.5vh] w-[9.5vh] items-center justify-center rounded-lg border-[0.5px] border-white/50 px-[1.5vh] transition-all duration-150",
+										"group mr-10 flex items-center justify-center rounded-lg border-[0.5px] border-white/50 px-5 py-4 font-bold leading-none transition-all duration-150",
 										sendDisabled
-											? "cursor-default bg-white/[0.06]"
+											? "cursor-disabled bg-white/[0.06] text-white/50"
 											: "bg-white/[0.1] hover:border-white hover:bg-white/[0.15] active:bg-white/[0.15]"
 									)}
 									disabled={sendDisabled}
 								>
-									<div
-										className={clsx(
-											"h-[6.5vh] w-[6.5vh] rounded-full border-4 border-white",
-											sendDisabled
-												? "opacity-[0.65]"
-												: "opacity-100 group-hover:opacity-100 group-active:opacity-100"
-										)}
-									/>
+									Send
 								</button>
 							</form>
 						</div>
@@ -245,7 +230,7 @@ const Home: NextPage = () => {
 								href={`mailto:${env.NEXT_PUBLIC_CONTACT_EMAIL}`}
 								className="text-xl font-semibold underline underline-offset-1 opacity-70 transition-all duration-150 hover:opacity-100 active:opacity-100"
 							>
-								Say hello
+								Report an issue
 							</a>
 						</div>
 					</footer>
